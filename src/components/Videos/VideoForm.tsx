@@ -1,13 +1,59 @@
-import React from 'react';
+import React, { FormEvent, useEffect } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import { createVideo, getData, updateVideo } from '../../api';
 import { useForm } from '../../hooks/useForm';
+import { Video, Params } from '../../interfaces/reqRes';
+
+//NOTIFY
+import { toast } from 'react-toastify';
 
 export const VideoForm = () => {
 
-    const { formulario, title, description, url,onChange } = useForm({
+    const history = useHistory();
+    const params = useParams<Params>();
+
+    const { title, url, description, onChange, setState } = useForm({
         title: '',
-        description: '',
-        url: ''
+        url: '',
+        description: ''
     });
+
+    const onSubmit = async(e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        if(!params.id) {
+            const video: Video = {
+                title,
+                url,
+                description
+            }
+            await createVideo(video);
+            toast.success('New video added');
+        } else {
+            const video: Video = {
+                title,
+                url,
+                description
+            }
+            await updateVideo(params.id, video);
+        }
+
+        history.push('/');
+        setState({title: '', url: '', description: ''});
+    };
+
+    useEffect(() => {
+
+        const getVideo = async(id: string) => {
+            const rest = await getData(id);
+            rest && setState({title: rest.title, url: rest.url, description: rest.description});
+        }
+        
+        if(params.id) {
+            getVideo(params.id);
+        }
+
+    }, [params.id, setState]);
 
     return (
         <div className="col-md-12 mt-4">
@@ -16,7 +62,7 @@ export const VideoForm = () => {
                     <div className="card">
                         <div className="card-body">
                             <h3> New Video </h3>
-                            <form>
+                            <form onSubmit={onSubmit}>
                                 <div className="mb-3 mt-4">
                                     <input 
                                         type="text"
@@ -49,16 +95,18 @@ export const VideoForm = () => {
                                 </div>
 
                                 <div className="mb-3">
-                                    <button className="btn btn-primary">Create Video</button>
+                                    {
+                                        params.id ? (<button className="btn btn-info">Update Video</button>) : (<button className="btn btn-primary">Create</button>)
+                                    }
                                 </div>
                             </form>
-                            <code>
+                            {/* <code>
                                 <pre>
                                     {
                                         JSON.stringify(formulario, null, 2)
                                     }
                                 </pre>
-                            </code>
+                            </code> */}
                         </div>
                     </div>
                 </div>

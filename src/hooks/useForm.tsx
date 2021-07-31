@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import React from 'react'
-
 export const useForm = <T extends Object>(formulario: T) => {
 
     const [state, setState] = useState( formulario );
@@ -16,6 +14,7 @@ export const useForm = <T extends Object>(formulario: T) => {
     return {
         ...state,
         formulario: state,
-        onChange
+        onChange,
+        setState
     }
 }
